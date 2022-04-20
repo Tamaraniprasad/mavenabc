@@ -1,49 +1,63 @@
+@Library('mylibraries')_
 pipeline
 {
     agent any
     stages
     {
-        stage('ContinuousDownload_Master')
-        {
-            steps
-            {
-             git 'https://github.com/Tamaraniprasad/mavenabc.git'
+         stage('Continuous Download Master')
+           {
+               
+              steps
+              {
+                
+               script
+                  {
+                     cicd.newGit("https://github.com/Tamaraniprasad/mavenabc.git")
+                   }
+               }
             }
-        }
-        stage('ContinuousBuild_Master')
-        {
-            steps
+            stage('Continuous Build Master') 
             {
-             sh 'mvn package'
+                steps
+                {
+                    script
+                    {
+                        cicd.newMaven()
+                    }
+                }
             }
-        }
-        
-    stage('ContinuousDeployment_Master')
-        {
-            steps
+            stage('Continuous Deploy Master')
             {
-             deploy adapters: [tomcat9(credentialsId: '48e60a09-4100-4c74-8190-4b1cdfddb272', path: '', url: 'http://172.31.2.90:8080')], contextPath: 'siva', war: '**/*.war'
+                steps
+                {
+                    
+                   script
+                    {
+                   cicd.newDeploy("http://172.31.2.90:8080","testapp")
+                    }
+                
+                }
             }
-           
-        }
-    stage('ContinuousTesting_Master')
-        {
-            steps
+            stage('Continuous Testing Master')
             {
-             git 'https://github.com/intelliqittrainings/FunctionalTesting.git'
-             sh 'java -jar /home/ubuntu/.jenkins/workspace/Declaretivepipeline/testing.jar'
+                steps
+                {
+                    script
+                    {
+                        cicd.newGit("https://github.com/intelliqittrainings/FunctionalTesting.git")
+                        cicd.newTest("DeclaretivepipelinewithSharedLibraries")
+                    }
+                }
             }
-           
-        }
-        stage('ContinuousDelivery_Master')
-        {
-            steps
+            stage('Continuous Delivery Master')
             {
-            input message: 'Required approvals', submitter: 'siva'
-            deploy adapters: [tomcat9(credentialsId: '388af6fb-6580-4b96-b3e3-c074c4c95cbe', path: '', url: 'http://172.31.3.158:8080')], contextPath: 'prasad', war: '**/*.war'
+                steps
+                {
+                    script
+                    {
+                        cicd.newDelivery("http://172.31.3.158:8080","prodapp")
+                    }
+                }
             }
-           
-        }
-    }       
+    }
 }
-    
